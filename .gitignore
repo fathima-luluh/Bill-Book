@@ -1,0 +1,36 @@
+
+# Python virtual environments
+venv/
+.venv/
+env/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Local database - contains customer and billing data
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+# Generated bills and output images
+outputs/
+*.png
+*.jpg
+*.jpeg
+
+# Streamlit secrets
+.streamlit/secrets.toml
+
+# Environment variables
+.env
+
+# Editor and operating system files
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.log
+*.tmp
