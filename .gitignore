@@ -34,3 +34,14 @@ Thumbs.db
 # Temporary files
 *.log
 *.tmp
+!docs/
+!docs/screenshots/
+!docs/screenshots/*.png
+!docs/screenshots/*.jpg
+!docs/screenshots/*.jpeg
+
+# Allow portfolio screenshots
+!docs/
+!docs/screenshots/
+!docs/screenshots/*.png
+!docs/screenshots/*.jpg

@@ -610,6 +610,23 @@ def create_bill_image(bill, shop):
 # 6. SAVE BILL
 # ==================================================
 
+def create_whatsapp_share_url(bill):
+    """Create a WhatsApp message link for a saved bill.
+
+    The bill image must still be attached manually after downloading it.
+    """
+    shop = get_shop_settings()
+    message = (
+        f"{shop.get('shop_name') or 'My Shop'}\n"
+        f"Bill No: {bill['id']}\n"
+        f"Customer: {bill['customer_name']}\n"
+        f"Date: {bill['created_at']}\n"
+        f"Total: Rs. {float(bill['total']):.2f}\n\n"
+        "Please find the bill image attached."
+    )
+    return "https://wa.me/?" + urlencode({"text": message})
+
+
 def save_bill(bill):
 
     conn = get_connection()
@@ -696,11 +713,25 @@ with tab1:
         if not bills_df.empty else 0
     )
 
-    total_bills = len(bills_df)
+    # Calculate today's sales using the date stored in each bill.
+    today = datetime.now().strftime("%d-%m-%Y")
 
+    if not bills_df.empty:
+        today_bills = bills_df[
+            bills_df["created_at"].astype(str).str.startswith(today)
+        ]
+        today_sales = float(
+            today_bills["total"].fillna(0).sum()
+        )
+        today_bill_count = len(today_bills)
+    else:
+        today_sales = 0.0
+        today_bill_count = 0
+
+    total_bills = len(bills_df)
     total_products = len(products_df)
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     col1.metric(
         "Total Sales",
@@ -708,13 +739,23 @@ with tab1:
     )
 
     col2.metric(
+        "Today's Sales",
+        f"₹{today_sales:,.2f}"
+    )
+
+    col3.metric(
         "Total Bills",
         total_bills
     )
 
-    col3.metric(
+    col4.metric(
         "Total Products",
         total_products
+    )
+
+    st.metric(
+        "Bills Created Today",
+        today_bill_count
     )
 
     st.divider()
@@ -991,6 +1032,15 @@ with tab2:
             mime="image/png"
         )
 
+        st.link_button(
+            "📲 Share on WhatsApp",
+            create_whatsapp_share_url(saved["bill"])
+        )
+        st.caption(
+            "First download the bill image. WhatsApp will open with a "
+            "prepared message; attach the downloaded PNG before sending."
+        )
+
 
 # ==================================================
 # 11. PRODUCT MANAGEMENT
@@ -1219,6 +1269,15 @@ with tab4:
                 data=buffer.getvalue(),
                 file_name=f"bill_{selected_bill_id}.png",
                 mime="image/png"
+            )
+
+            st.link_button(
+                "📲 Share Selected Bill on WhatsApp",
+                create_whatsapp_share_url(history_bill)
+            )
+            st.caption(
+                "Download the image first, then attach that PNG in "
+                "WhatsApp before sending."
             )
 
         except (ValueError, TypeError, KeyError) as error:
